@@ -1,0 +1,111 @@
+# Self-hosted Moltbot deployment with Cloudflare Tunnel
+# Includes Chrome browser for CDP automation
+#
+# Usage:
+#   1. Copy .env.example to .env and fill in values
+#   2. Run: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # Moltbot Gateway - AI Assistant
+  moltbot:
+    build:
+      context: ..
+      dockerfile: selfhosted/Dockerfile.selfhosted
+    container_name: moltbot-gateway
+    ports:
+      - "18789:18789"
+    environment:
+      # AI Provider (choose one)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AI_GATEWAY_API_KEY=${AI_GATEWAY_API_KEY:-}
+      - AI_GATEWAY_BASE_URL=${AI_GATEWAY_BASE_URL:-}
+      
+      # Gateway configuration
+      - CLAWDBOT_GATEWAY_TOKEN=${MOLTBOT_GATEWAY_TOKEN}
+      - CLAWDBOT_DEV_MODE=${DEV_MODE:-false}
+      
+      # Chrome browser URL for CDP
+      - CHROME_WS_URL=ws://chrome:3000
+      
+      # Chat channel tokens (optional)
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_DM_POLICY=${TELEGRAM_DM_POLICY:-pairing}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
+      - DISCORD_DM_POLICY=${DISCORD_DM_POLICY:-pairing}
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
+      - SLACK_APP_TOKEN=${SLACK_APP_TOKEN:-}
+    volumes:
+      - moltbot-config:/root/.clawdbot
+      - moltbot-workspace:/root/clawd
+    networks:
+      - moltbot-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      - chrome
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Chrome Browser for CDP automation
+  chrome:
+    image: browserless/chrome:latest
+    container_name: moltbot-chrome
+    ports:
+      - "3000:3000"
+    environment:
+      - CONNECTION_TIMEOUT=60000
+      - MAX_CONCURRENT_SESSIONS=10
+      - ENABLE_DEBUGGER=false
+      - DEFAULT_BLOCK_ADS=true
+      - DEFAULT_STEALTH=true
+      - TOKEN=${CHROME_TOKEN:-}
+    networks:
+      - moltbot-network
+    restart: unless-stopped
+    # Chrome needs shared memory for stability
+    shm_size: '2gb'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # Cloudflare Tunnel - Secure connection to Cloudflare
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: moltbot-tunnel
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - moltbot-network
+    restart: unless-stopped
+    depends_on:
+      moltbot:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+volumes:
+  moltbot-config:
+    name: moltbot-config
+  moltbot-workspace:
+    name: moltbot-workspace
+
+networks:
+  moltbot-network:
+    name: moltbot-network
+    driver: bridge

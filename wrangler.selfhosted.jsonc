@@ -1,0 +1,47 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "moltbot-selfhosted",
+    "main": "selfhosted/index.selfhosted.ts",
+    "compatibility_date": "2025-05-06",
+    "compatibility_flags": [
+        "nodejs_compat"
+    ],
+    "observability": {
+        "enabled": true
+    },
+    // Static assets for admin UI (built by vite)
+    "assets": {
+        "directory": "./dist/client",
+        "not_found_handling": "single-page-application",
+        "html_handling": "auto-trailing-slash",
+        "binding": "ASSETS",
+        "run_worker_first": true
+    },
+    // Allow importing HTML files as text modules
+    "rules": [
+        {
+            "type": "Text",
+            "globs": [
+                "**/*.html"
+            ],
+            "fallthrough": false
+        }
+    ]
+    // ============================================================
+    // NO CLOUDFLARE BROWSER RENDERING - Using Docker Chrome
+    // NO R2 STORAGE - Data persisted in Docker volumes
+    // ============================================================
+    // 
+    // REQUIRED SECRETS (set via `wrangler secret put <NAME>`):
+    // 
+    // SELFHOSTED_URL          - URL of self-hosted server (via Cloudflare Tunnel)
+    // SELFHOSTED_AUTH_TOKEN   - Internal auth token (optional)
+    // MOLTBOT_GATEWAY_TOKEN   - Gateway access token
+    // CF_ACCESS_TEAM_DOMAIN   - Cloudflare Access team domain
+    // CF_ACCESS_AUD           - Cloudflare Access application AUD
+    // 
+    // OPTIONAL:
+    // CDP_SECRET              - Shared secret for CDP endpoint
+    // DEBUG_ROUTES            - Set to 'true' to enable debug routes
+    // DEV_MODE                - Set to 'true' for local development
+}
