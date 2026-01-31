@@ -14,8 +14,10 @@ services:
       context: ..
       dockerfile: selfhosted/Dockerfile.selfhosted
     container_name: moltbot-gateway
-    ports:
-      - "18789:18789"
+    # NOTE: No ports exposed - only accessible via Cloudflare Tunnel (internal network)
+    # Uncomment below for local debugging only:
+    # ports:
+    #   - "127.0.0.1:18789:18789"
     environment:
       # AI Provider (choose one)
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
@@ -60,8 +62,10 @@ services:
   chrome:
     image: browserless/chrome:latest
     container_name: moltbot-chrome
-    ports:
-      - "3000:3000"
+    # NOTE: No ports exposed - only accessible via internal network (moltbot connects to ws://chrome:3000)
+    # Uncomment below for local debugging only:
+    # ports:
+    #   - "127.0.0.1:3000:3000"
     environment:
       - CONNECTION_TIMEOUT=60000
       - MAX_CONCURRENT_SESSIONS=10
