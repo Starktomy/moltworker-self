@@ -226,7 +226,7 @@ export async function proxySelfHostedWebSocket(
         // Return WebSocket response (Cloudflare-specific)
         return new Response(null, {
             status: 101,
-            // @ts-expect-error - webSocket is a Cloudflare Workers extension
+            // ts-expect-error - webSocket is a Cloudflare Workers extension
             webSocket: clientWs,
         });
     } catch (err) {
