@@ -19,8 +19,14 @@ services:
     # ports:
     #   - "127.0.0.1:18789:18789"
     environment:
-      # AI Provider (choose one)
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      # AI Provider - Anthropic (Option 1)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      
+      # AI Provider - OpenAI or OpenAI-compatible API (Option 2)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      
+      # AI Provider - Cloudflare AI Gateway (Option 3)
       - AI_GATEWAY_API_KEY=${AI_GATEWAY_API_KEY:-}
       - AI_GATEWAY_BASE_URL=${AI_GATEWAY_BASE_URL:-}
       

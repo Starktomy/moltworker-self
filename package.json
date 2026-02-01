@@ -1,9 +1,9 @@
 {
-  "name": "moltbot-sandbox",
+  "name": "moltbot-selfhosted",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Run Moltbot personal AI assistant in a Cloudflare Sandbox",
+  "description": "Self-hosted Moltbot AI assistant via Cloudflare Tunnel - No R2/Browser Rendering needed",
   "scripts": {
     "build": "vite build",
     "deploy": "npm run build && wrangler deploy",
@@ -16,14 +16,12 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@cloudflare/puppeteer": "^1.0.5",
     "hono": "^4.11.6",
     "jose": "^6.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@cloudflare/sandbox": "*",
     "@cloudflare/vite-plugin": "^1.0.0",
     "@cloudflare/workers-types": "^4.20250109.0",
     "@types/node": "^22.0.0",
@@ -40,11 +38,17 @@
   "license": "MIT",
   "cloudflare": {
     "bindings": {
-      "ANTHROPIC_API_KEY": {
-        "description": "Your [Anthropic API key](https://console.anthropic.com/)."
+      "SELFHOSTED_URL": {
+        "description": "Your Tunnel internal URL. Format: `https://<TUNNEL_ID>.cfargotunnel.com`. Get Tunnel ID with `cloudflared tunnel info <tunnel-name>`."
       },
       "MOLTBOT_GATEWAY_TOKEN": {
-        "description": "Token for gateway access. Generate with: openssl rand -hex 32"
+        "description": "Gateway access token. Must match the token in your server's `.env` file. Generate with `openssl rand -hex 32`."
+      },
+      "CF_ACCESS_TEAM_DOMAIN": {
+        "description": "Your Cloudflare Access team domain (e.g., `myteam.cloudflareaccess.com`). Find in Zero Trust Dashboard."
+      },
+      "CF_ACCESS_AUD": {
+        "description": "Your Access Application's Audience (AUD) Tag. Find in Access → Applications → Your App → Overview."
       }
     }
   }
